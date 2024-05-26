@@ -3,7 +3,7 @@ version: '2.27'
 
 services:
   app:
-    build: 
+    build:
       context: .
       args:
         - DEV=true
