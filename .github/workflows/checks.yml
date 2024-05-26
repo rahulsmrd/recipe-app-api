@@ -1,25 +1,28 @@
 ---
 name: Checks
 
-on: [push]
+on: 
+  push:
+    branches:
+    - main
+    - release/*
 
 jobs: 
   test-lint:
     name: Test and Lint
-    runs-on: ubuntu-22
+    runs-on: ubuntu-latest
     steps:
-    #login to docker hub
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-    #Checkout the Code
+
       - name: Checkout
         uses: actions/checkout@v2
-    # Runs Unit tests
+
       - name: Tests
         run: docker-compose run --rm app sh -c "python manage.py test"
-    #Runs Lintings using flake8
+
       - name: Lint
         run: docker-compose run --rm app sh -c "flake8"
