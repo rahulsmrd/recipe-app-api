@@ -6,7 +6,7 @@ on: [push]
 jobs: 
   test-lint:
     name: Test and Lint
-    run-on: ubuntu-22
+    runs-on: ubuntu-22
     steps:
     #login to docker hub
       - name: Login to Docker Hub
