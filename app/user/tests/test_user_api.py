@@ -42,11 +42,11 @@ class PublicUserAPI(TestCase):
             'password' : 'testpass123',
             'name' : 'test_name',
         }
-        create_user(payload)
+        create_user(**payload)
         res = self.client.post(CREATE_USER_URL,payload)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_passeord_too_short_error(self):
+    def test_password_too_short_error(self):
         """Test returns error if Passeord is too short < 5 chars"""
 
         payload = {
@@ -60,4 +60,4 @@ class PublicUserAPI(TestCase):
         user_exixts = get_user_model().objects.filter(
             email=payload['email']
         ).exists()
-        self.assertEqual(user_exixts)
+        self.assertFalse(user_exixts)
