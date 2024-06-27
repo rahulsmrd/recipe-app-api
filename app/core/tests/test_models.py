@@ -3,6 +3,13 @@ Tests for models.py
 """
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from decimal import Decimal
+from core import models
+
+
+def create_user(email='test@example.com', password='testpassword123'):
+    """Create and return a NewUser instance"""
+    return get_user_model().objects.create_user(email, password)
 
 
 class ModelTest(TestCase):
@@ -46,3 +53,42 @@ class ModelTest(TestCase):
         )
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_create_recipie(self):
+        '''Test creating a recipie is successful'''
+        user = get_user_model().objects.create_user(
+            'testemial@gmail.com',
+            'testpassword123'
+        )
+
+        recipie = models.Recipie.objects.create(
+            user=user,
+            title='sample title',
+            time_minutes=5,
+            price=Decimal('50.0'),
+            description='sample recipie description',
+        )
+
+        self.assertEqual(str(recipie), recipie.title)
+
+    def test_create_tag(self):
+        """Test Create a tag"""
+        user = create_user()
+
+        tag = models.Tag.objects.create(
+            user=user,
+            name='testTag'
+        )
+
+        self.assertEqual(tag.name, str(tag))
+
+    def test_create_ingredient(self):
+        """Test Create an ingredient"""
+        user = create_user()
+
+        ingredient = models.Ingredient.objects.create(
+            user=user,
+            name='testIngredient'
+        )
+
+        self.assertEqual(ingredient.name, str(ingredient))
