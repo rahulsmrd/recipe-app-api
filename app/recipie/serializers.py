@@ -35,7 +35,7 @@ class RecipieSerializer(serializers.ModelSerializer):
         model = Recipie
         fields = [
             "id", 'title', 'time_minutes',
-            'price', 'link', 'tags', 'ingredients'
+            'price', 'link', 'tags', 'ingredients', 'image'
         ]
         read_only_fields = ['id', ]
 

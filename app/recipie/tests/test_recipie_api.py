@@ -13,7 +13,7 @@ from recipie.serializers import RecipieSerializer, RecipieDetailSerializer
 
 import tempfile
 import os
-from PIL import Image # Pillow Library
+from PIL import Image  # Pillow Library
 
 
 RECIPIE_URL = reverse("recipie:recipie-list")
@@ -474,16 +474,77 @@ class PrivateRecipieAPITests(TestCase):
 
         self.assertEqual(recipie.ingredients.count(), 0)
 
+    def test_filter_by_tags(self):
+        '''Test filter recipies by tags'''
+        r1 = create_recipie(user=self.user, title='title1')
+        r2 = create_recipie(user=self.user, title='title2')
+        r3 = create_recipie(user=self.user, title='title3')
+
+        tag1 = Tag.objects.create(
+            user=self.user,
+            name='tag1'
+        )
+        r1.tags.add(tag1)
+
+        tag2 = Tag.objects.create(
+            user=self.user,
+            name='tag2'
+        )
+        r2.tags.add(tag2)
+
+        params = {'tags': f'{tag1.id},{tag2.id}'}
+
+        res = self.client.get(RECIPIE_URL, params)
+
+        s1 = RecipieSerializer(r1)
+        s2 = RecipieSerializer(r2)
+        s3 = RecipieSerializer(r3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_ingredients(self):
+        '''Test filter recipies by Ingredients'''
+        r1 = create_recipie(user=self.user, title='title1')
+        r2 = create_recipie(user=self.user, title='title2')
+        r3 = create_recipie(user=self.user, title='title3')
+
+        ingredient1 = Ingredient.objects.create(
+            user=self.user,
+            name='ingredient1'
+        )
+        r1.ingredients.add(ingredient1)
+
+        ingredient2 = Ingredient.objects.create(
+            user=self.user,
+            name='ingredient2'
+        )
+        r2.ingredients.add(ingredient2)
+
+        params = {'ingredients': f'{ingredient1.id},{ingredient2.id}'}
+
+        res = self.client.get(RECIPIE_URL, params)
+
+        s1 = RecipieSerializer(r1)
+        s2 = RecipieSerializer(r2)
+        s3 = RecipieSerializer(r3)
+
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+
 class ImageUploadTest(TestCase):
     """Test for Image Upload"""
 
     def setUp(self):
         self.client = APIClient()
-        self.user = create_user(
+        self.user = get_user_model().objects.create_user(
             email='test@gmail.com',
             password='testpassword123',)
         self.client.force_authenticate(self.user)
-        self.recipie = create_recipie(self.user)
+        self.recipie = create_recipie(user=self.user)
 
     def tearDown(self):
         """SetUp executes at the start of the test
@@ -494,8 +555,8 @@ class ImageUploadTest(TestCase):
     def test_upload_image(self):
         '''Test Upload Image'''
         url = image_upload_url(self.recipie.id)
-        with tempfile.NamedTemporaryFile(prefix='jpg') as image_file:
-            img = Image.new('RGB', (10,10))
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as image_file:
+            img = Image.new('RGB', (10, 10))
             img.save(image_file, format='JPEG')
             image_file.seek(0)
             payload = {
@@ -515,4 +576,4 @@ class ImageUploadTest(TestCase):
         }
         res = self.client.post(url, payload, format='multipart')
 
-        self.assertEqual(res.status_code,status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

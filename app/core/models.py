@@ -14,6 +14,7 @@ import os
 
 # Create your models here.
 
+
 def recipie_image_file_path(instamce, filename):
     """generate file path for image file"""
     ext = os.path.splitext(filename)[1]
