@@ -2,6 +2,7 @@
 Tests for models.py
 """
 from django.test import TestCase
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from decimal import Decimal
 from core import models
@@ -92,3 +93,12 @@ class ModelTest(TestCase):
         )
 
         self.assertEqual(ingredient.name, str(ingredient))
+
+    @patch('core.models.uuid.uuid4')
+    def test_recipie_file_name_uuid(self, mock_uuid):
+        """Test generating image path"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.recipie_image_file_path(None, 'example.jpg')
+
+        self.assertEqual(file_path, f'upload/recipie/{uuid}.jpg')

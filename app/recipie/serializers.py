@@ -94,3 +94,11 @@ class RecipieDetailSerializer(RecipieSerializer):
 
     class Meta(RecipieSerializer.Meta):
         fields = RecipieSerializer.Meta.fields + ['description']
+
+
+class RecipieImageSerializer(serializers.ModelSerializer):
+    """Serializer for Recipie Images"""
+    class Meta:
+        model = Recipie
+        fields = ['id', 'image']
+        extra_kwargs = {'image': {'required': 'True'}}

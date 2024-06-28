@@ -9,8 +9,16 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
+import uuid
+import os
 
 # Create your models here.
+
+def recipie_image_file_path(instamce, filename):
+    """generate file path for image file"""
+    ext = os.path.splitext(filename)[1]
+    filename = f'{uuid.uuid4()}{ext}'
+    return os.path.join('upload', 'recipie', filename)
 
 
 class UserManager(BaseUserManager):
@@ -64,6 +72,7 @@ class Recipie(models.Model):
     link = models.CharField(max_length=255, blank=True)
     tags = models.ManyToManyField('Tag')
     ingredients = models.ManyToManyField('Ingredient')
+    image = models.ImageField(null=True, upload_to=recipie_image_file_path)
 
     def __str__(self) -> str:
         return self.title

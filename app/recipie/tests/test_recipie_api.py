@@ -11,8 +11,17 @@ from rest_framework.test import APIClient
 from core.models import Recipie, Tag, Ingredient
 from recipie.serializers import RecipieSerializer, RecipieDetailSerializer
 
+import tempfile
+import os
+from PIL import Image # Pillow Library
+
 
 RECIPIE_URL = reverse("recipie:recipie-list")
+
+
+def image_upload_url(recipie_id):
+    """Create and Return a URL for uploading images"""
+    return reverse("recipie:recipie-upload-image", args=[recipie_id])
 
 
 def detail_url(recipie_id):
@@ -464,3 +473,46 @@ class PrivateRecipieAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
         self.assertEqual(recipie.ingredients.count(), 0)
+
+class ImageUploadTest(TestCase):
+    """Test for Image Upload"""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = create_user(
+            email='test@gmail.com',
+            password='testpassword123',)
+        self.client.force_authenticate(self.user)
+        self.recipie = create_recipie(self.user)
+
+    def tearDown(self):
+        """SetUp executes at the start of the test
+           TearDown executes at the end of the test
+        """
+        self.recipie.image.delete()
+
+    def test_upload_image(self):
+        '''Test Upload Image'''
+        url = image_upload_url(self.recipie.id)
+        with tempfile.NamedTemporaryFile(prefix='jpg') as image_file:
+            img = Image.new('RGB', (10,10))
+            img.save(image_file, format='JPEG')
+            image_file.seek(0)
+            payload = {
+                'image': image_file
+            }
+            res = self.client.post(url, payload, format='multipart')
+        self.recipie.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.recipie.image.path))
+
+    def test_upload_image_bad_request(self):
+        """Test upload image with bad request"""
+        url = image_upload_url(self.recipie.id)
+        payload = {
+            'image': 'notanImage',
+        }
+        res = self.client.post(url, payload, format='multipart')
+
+        self.assertEqual(res.status_code,status.HTTP_400_BAD_REQUEST)
